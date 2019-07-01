@@ -80,7 +80,7 @@ void MyInitEPwmGpio(void)
  */
 void InitEPwm1(void)
 {
-    EPwm1Regs.TBPRD = 750;                          // Period = 2 x 75000 TBCLK counts
+    EPwm1Regs.TBPRD = 7500;                          // Period = 2 x 75000 TBCLK counts
     EPwm1Regs.CMPA.half.CMPA = 0;                   // Init with duty cycle = 0
     EPwm1Regs.TBPHS.all = 0;                        // Set Phase register to zero
     EPwm1Regs.TBCTR = 0;                            // clear TB counter
@@ -88,7 +88,7 @@ void InitEPwm1(void)
     EPwm1Regs.TBCTL.bit.PHSEN = TB_DISABLE;         // Master module
     EPwm1Regs.TBCTL.bit.PRDLD = TB_SHADOW;
     EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;     // Sync down-stream module
-    EPwm1Regs.TBCTL.bit.HSPCLKDIV = TB_HSPDIV1;    // TBCLK = SYSCLKOUT / 1
+    EPwm1Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1;        // TBCLK = SYSCLKOUT / 1
     EPwm1Regs.TBCTL.bit.CLKDIV = TB_DIV1;           // TBCLK = TBCLK / 1
     EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
     EPwm1Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
