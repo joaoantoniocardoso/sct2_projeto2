@@ -47,10 +47,21 @@
 	brazil,				% o último idioma é o principal do documento
 ]{abntex2}
 
+\usepackage[activate={true,nocompatibility},final,babel=true,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype} 
+\tolerance 1414 
+\hbadness 1414 
+\emergencystretch 1.5em 
+\hfuzz 0.3pt 
+\widowpenalty=10000 
+\vfuzz \hfuzz 
+\raggedbottom 
 
 % ---
 % PACOTES
 % ---
+
+\usepackage{breakurl}
+% \usepackage[breaklinks=true]{hyperref}
 
 % ---
 % Pacotes fundamentais 
@@ -99,6 +110,9 @@
 
 % Para matrizes:
 \usepackage{amsmath} 
+
+% Fornece {sidewaysfigure} para figuras de lado
+\usepackage{rotating}
 
 % --- 
 % CONFIGURAÇÕES DE PACOTES
@@ -212,7 +226,7 @@
 % Início do documento
 % ----
 \begin{document}
-	
+
 	% Seleciona o idioma do documento (conforme pacotes do babel)
 	%\selectlanguage{english}
 	\selectlanguage{brazil}
@@ -475,6 +489,8 @@
         	\label{fig-step_response_recursive_openloop}
         	\legend{Fonte: do autor. }
     	\end{figure}
+    	
+    	Para conferir a modelagem, foi realizada uma simulação do circuito eletrônico da planta em malha aberta no \textit{PSIM}, no qual pode ser verificado que para o degrau aplicado, a resposta estados do sistema modelado coincidem com os valores obtidos no circuito eletrônico. As formas de onda podem ser conferidas no \autoref{ap-psim}.
     	
     	\subsection{Identificação da Planta}
     	
@@ -985,7 +1001,20 @@
             
             \subsubsection{Resultados}
             
+        	    Para verificar o controlador e o observador foi realizada também uma simulação do circuito eletrônico da planta em malha fechada no \textit{PSIM}, no qual pode ser verificado que para o degrau aplicado, a resposta estados observados coincidem razoavelmente bem com os valores obtidos no circuito eletrônico, e as repostas para ação de controle e saída se comportam de maneira praticamente idêntica à simulação com as equações recursivas ou aplicando \textit{control.forced\_response()}. As formas de onda podem ser conferidas no \autoref{ap-psim}.
+            
                 Um \textit{script}(\autoref{ap-scripts}) gerou as constantes utilizadas no \textit{firmware} implementado no \textit{DSP}. A resposta ao degrau para o sistema em malha fechada em comparação ao mesmo sistema em malha aberta pode ser visto na \autoref{fig-ftmf-step}.
+                
+                Os resultados aqui obtidos na prática foram obtidos projetando o controlador com os polos ligeiramente diferentes, pois foi implementado em C no microcontrolador antes de ocorrer uma correção nos \textit{scripts} de projeto. Os polos aplicados na prática são mostrados na \autoref{eq-polos_controlador_pratico} e são referenciados aqui como \textit{antigos}.
+
+                \begin{equation}
+                    \label{eq-polos_controlador_pratico}
+                    j_{antigo} = \begin{bmatrix}
+                        -128.52101782 +171.08783376i & -128.52101782 -171.08783376i \\
+                        -253.62027896  +0.i         & -253.62027896  +0.i    
+                    \end{bmatrix}
+                \end{equation}
+                
                 As formas de onda apresentam resultados similares aos esperados pela simulação da \autoref{fig-step_response_recursive_closedloop}.
                 
                 \begin{figure}[htbp]
@@ -1019,12 +1048,13 @@
                     \centering
                     \caption{Comparação dos resultados}
                     \begin{tabular}{r|c|c|c|c|c}
-                                    &               $Mp\%$&     $t_{s5\%}[ms]$&     $t_r\,[ms]$ &       $v_{\inf}$ &	$v_{0}$ \\ \hline
-                        Malha Aberta simulação  &   18,88 &     50,1 &              14,8 &              1,50 & 			1,00 \\
-                        Malha Aberta prático  &     16,32 &     49,2 &              15,2 &              1,49 & 			1,01 \\
-                        Malha Fechada simulação &   2,88 &      22,4 &              13,8 &              1,50 & 			1,00 \\
-                        Malha Fechada prático &     2,00 &      23,8 &              14,8 &              1,50 &			1,00 \\
-                        Requisitos	        &		8,05 &		25,0 &				N/A	&				N/A	&			N/A
+                                    &                       $Mp\%$&     $t_{s5\%}[ms]$&     $t_r\,[ms]$ &       $v_{\inf}$ &	$v_{0}$ \\ \hline
+                        Malha Aberta simulação  &           18,88 &     50,1 &              14,8 &              1,50 & 			1,00 \\
+                        Malha Aberta prático  &             16,32 &     49,2 &              15,2 &              1,49 & 			1,01 \\
+                        Malha Fechada simulação novo &      2,88 &      22,4 &              13,8 &              1,50 & 			1,00 \\
+                        Malha Fechada simulação (antigo) &  2,76 &      22,6 &              13,9 &              1,50 & 			1,00 \\
+                        Malha Fechada prático (antigo) &    2,00 &      23,8 &              14,8 &              1,50 &			1,00 \\
+                        Requisitos	        &		        8,05 &	    25,0 &				N/A	&				N/A	&			N/A
                     \end{tabular}
                     \legend{Fonte: do autor.}
                 \end{table}
@@ -1095,7 +1125,7 @@
 % 		\pagebreak
         \clearpage
 	
-    	\chapter{Resultados da Simulação Completa}
+    	\chapter{Resultados da Simulação Recursiva Completa}
         	\label{ap-simul}
         	
         	\FloatBarrier
@@ -1182,6 +1212,30 @@
         	
         	\FloatBarrier
         	
+        \clearpage
+        \chapter{Simulação no PSIM}
+        \label{ap-psim}
+        
+            A biblioteca \textit{C Array Macros} foi portada com algumas modificações para o bloco C do \textit{PSIM} e assim foi possível simular a planta, o controlador e o observador em C, além do próprio circuito eletrônico simulado.
+            
+            A partir disso foi montada uma simulação para comparar a resposta da planta (circuito eletrônico) em malha aberta, e em malha fechada com o controlador com observador implementados no \textit{bloco C}, comparando os valores dos estados do circuito (prefixo \textit{ref\_}) com os valores estimados pelo observador (prefixo \textit{var\_}).
+            
+            \begin{sidewaysfigure}[htbp]
+            	\centering
+            	\caption{Diagrama da Simulação com Controlador e Observador no PSIM}
+            	\includegraphics[width=\textwidth,keepaspectratio]{tex/imgs/psim/diagram.png}
+            	\label{fig-psim_diagram}
+            	\legend{Fonte: do autor. }
+        	\end{sidewaysfigure}
+            
+            \begin{figure}[htbp]
+            	\centering
+            	\caption{Formas de onda da Simulação com Controlador e Observador no PSIM}
+            	\includegraphics[width=\textwidth,keepaspectratio]{tex/imgs/psim/waveforms.png}
+            	\label{fig-psim_waveforms}
+            	\legend{Fonte: do autor. }
+        	\end{figure}
+        	
     	\clearpage
         \chapter{Códigos Fonte do Projeto}
             \label{ap-scripts}
@@ -1210,6 +1264,7 @@
             O código fonte para as simulações no \textit{LTSpice} podem ser acessados em:
             
             \url{https://github.com/joaoantoniocardoso/sct2_projeto2/tree/master/hardware/simulations}
+            
             
             O código fonte dos \textit{scripts} em \textit{Python} e \textit{Jupyter Notebook} podem ser acessados em:
             
